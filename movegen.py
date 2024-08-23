@@ -41,15 +41,14 @@ def generate_pawn_moves(squares: list, row: int, col: int, piece: int, moves: li
     pawn_moves = pawn_movement_lookup[square_index][1 - int(0.5 * (color + 1))]
     single_pawn_push_blocked = False
 
-    print(pawn_moves, square_index, color, int(0.5 * (color + 1)))
-
-    for index, target_index in enumerate(pawn_moves):
-        is_push_move = index < 2
+    for target_index in pawn_moves:
+        delta_move = abs(target_index - square_index)
+        is_push_move = delta_move == 8 or delta_move == 16
         piece_on_target_square = squares[target_index]
 
         # Push move
         if is_push_move:
-            if index == 0:
+            if delta_move == 8:
                 # Single pawn push
                 if piece_on_target_square == piece_class_none:
                     # If square is not occupied
@@ -57,7 +56,7 @@ def generate_pawn_moves(squares: list, row: int, col: int, piece: int, moves: li
                 else:
                     single_pawn_push_blocked = True
                     continue
-            elif index == 1:
+            elif delta_move == 16:
                 # Double pawn push:
                 if not single_pawn_push_blocked and piece_on_target_square == piece_class_none and move_count == 0:
                     # If single pawn push was not blocked and square is not occupied and piece has not moved
@@ -68,7 +67,7 @@ def generate_pawn_moves(squares: list, row: int, col: int, piece: int, moves: li
                 if piece_class.get_color(piece_on_target_square) != color:
                     moves.append((square_index, target_index))
 
-    # TODO: En passant
+    # En passant
         
 
 def generate_knight_moves(squares: list, row: int, col: int, piece: int, moves: list):
