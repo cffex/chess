@@ -38,17 +38,31 @@ class board():
 
         starting_index = move[0]
         ending_index = move[1]
+        delta_move = ending_index - starting_index
 
         piece_on_starting_index = squares[starting_index]
         piece_on_ending_index = squares[ending_index]
+
+        starting_piece_color = piece_class.get_color(piece_on_starting_index) 
 
         ###
         ### Moving the piece from starting_index to ending_index
         ###
         
         if piece_on_ending_index != piece_class.none:
-            # If it is a pawn, reset pawn's data
+            # If the captured piece was a pawn, reset the pawn's data
             self.pawn_movement_data[ending_index] = 0
+        
+        # Handles en passant move
+        if piece_class.is_pawn(piece_on_starting_index):
+            abs_delta_move = abs(delta_move)
+
+            # If move is a diagonal move
+            if abs_delta_move == piece_class.dir_topleft or abs_delta_move == piece_class.dir_topright:
+                # Makes sure it is an en passant move
+                if piece_on_ending_index == piece_class.none and piece_class.is_pawn(squares[ending_index + piece_class.dir_bottom * starting_piece_color]):
+                    squares[ending_index + piece_class.dir_bottom * starting_piece_color] = piece_class.none
+
 
         squares[starting_index] = piece_class.none
         squares[ending_index] = piece_on_starting_index

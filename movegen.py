@@ -68,7 +68,27 @@ def generate_pawn_moves(squares: list, row: int, col: int, piece: int, moves: li
                     moves.append((square_index, target_index))
 
     # En passant
+
+    if row == 3 or row == 4:
+        left_adjacent_square_index = square_index - 1
+        right_adjacent_square_index = square_index + 1
+
+        piece_on_left_adjacent_square = squares[left_adjacent_square_index]
+        piece_on_right_adjacent_square = squares[right_adjacent_square_index]
         
+        # Left en passant
+        if piece_on_left_adjacent_square != piece_class_none:
+            if piece_class.is_pawn(piece_on_left_adjacent_square) and piece_class.get_color(piece_on_left_adjacent_square) != color:
+                if pawn_movement_data[left_adjacent_square_index] == 1:
+                    # If adjacent piece exist AND piece is a pawn AND piece is an enemy AND piece only moved once.
+                    moves.append((square_index, left_adjacent_square_index + piece_class.dir_top * color))
+
+        # Right en passant
+        if piece_on_right_adjacent_square != piece_class_none:
+            if piece_class.is_pawn(piece_on_right_adjacent_square) and piece_class.get_color(piece_on_right_adjacent_square) != color:
+                if pawn_movement_data[right_adjacent_square_index] == 1:
+                    # If adjacent piece exist AND piece is a pawn AND piece is an enemy AND piece only moved once.
+                    moves.append((square_index, right_adjacent_square_index + piece_class.dir_top * color))
 
 def generate_knight_moves(squares: list, row: int, col: int, piece: int, moves: list):
     square_index = row * 8 + col
