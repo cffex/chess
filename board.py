@@ -15,6 +15,7 @@ class board():
             [True, True], 
             [True, True]
         ]
+        self.move_count = 0
         
     ###
     ###
@@ -35,7 +36,8 @@ class board():
             piece_indices=self.piece_indices, 
             moves=self.moves,
             pawn_movement_data=self.pawn_movement_data,
-            castling_allowed=self.castling_allowed
+            castling_allowed=self.castling_allowed,
+            move_count = self.move_count
         )
 
     def make_move(self, move: tuple):
@@ -52,14 +54,13 @@ class board():
         ending_piece_color = piece_class.get_color(piece_on_ending_index)
 
         starting_piece_is_white = starting_piece_color > 0
-
-        ###
-        ### Moving the piece from starting_index to ending_index
-        ###
+        
+        # Update move count
+        self.move_count += 1
         
         if piece_class.is_pawn(piece_on_ending_index):
             # If the captured piece was a pawn, reset the pawn's data
-            self.pawn_movement_data[ending_index] = 0
+            self.pawn_movement_data[ending_index] = (0, 0)
 
         elif piece_class.is_rook(piece_on_ending_index):
             # If the captured piece was a rook, it's color castling right is taken away
@@ -80,8 +81,8 @@ class board():
 
             # Handles movecount
             if piece_class.is_pawn(piece_on_starting_index):
-                self.pawn_movement_data[ending_index] =  self.pawn_movement_data[starting_index] + 1
-                self.pawn_movement_data[starting_index] = 0
+                self.pawn_movement_data[ending_index] = (self.pawn_movement_data[starting_index][0] + 1, self.move_count)
+                self.pawn_movement_data[starting_index] = (0, 0)
 
         # Handles castling
         if piece_class.is_king(piece_on_starting_index) or piece_class.is_rook(piece_on_starting_index):
@@ -101,15 +102,13 @@ class board():
                 color_index = 0 if starting_piece_is_white else 1
                 self.castling_allowed[color_index][0] = False
                 self.castling_allowed[color_index][1] = False
-        
+
+        # Moving the piece from starting_index to ending_index
         squares[starting_index] = piece_class.none
         squares[ending_index] = piece_on_starting_index
 
-        ###
-        ### Update the piece indices loopup
-        ###
-
+        # Update the piece indices lookup
         self.piece_indices.remove(starting_index)
-
+        
         if ending_index not in self.piece_indices:
             self.piece_indices.append(ending_index)

@@ -35,14 +35,13 @@ def generate_sliding_moves(squares: list, row: int, col: int, piece: int, moves:
             if piece_on_target_square_exist and not piece_on_target_square_is_friendly:
                 break
 
-def generate_pawn_moves(squares: list, row: int, col: int, piece: int, moves: list, pawn_movement_data: list):
+def generate_pawn_moves(squares: list, row: int, col: int, piece: int, moves: list, pawn_movement_data: list, move_count: int):
     square_index = row * 8 + col
-    move_count = pawn_movement_data[square_index]
-    color = piece_class.get_color(piece)
-    pawn_moves = pawn_movement_lookup[square_index][1 - int(0.5 * (color + 1))]
     single_pawn_push_blocked = False
+    color = piece_class.get_color(piece)
+    pawn_move_count = pawn_movement_data[square_index][0]
 
-    for target_index in pawn_moves:
+    for target_index in pawn_movement_lookup[square_index][piece_class.convert_to_01_index(color)]:
         delta_move = abs(target_index - square_index)
         is_push_move = delta_move == 8 or delta_move == 16
         piece_on_target_square = squares[target_index]
@@ -58,9 +57,11 @@ def generate_pawn_moves(squares: list, row: int, col: int, piece: int, moves: li
                     single_pawn_push_blocked = True
                     continue
             elif delta_move == 16:
-                # Double pawn push:
-                if not single_pawn_push_blocked and piece_on_target_square == piece_class_none and move_count == 0:
-                    # If single pawn push was not blocked and square is not occupied and piece has not moved
+                # Double pawn push
+                if not single_pawn_push_blocked and piece_on_target_square == piece_class_none and pawn_move_count == 0:
+                    # If single pawn push was not blocked
+                    # AND square is not occupied 
+                    # AND piece has not moved
                     moves.append((square_index, target_index))
         else:
             # Capture move
@@ -76,19 +77,31 @@ def generate_pawn_moves(squares: list, row: int, col: int, piece: int, moves: li
 
         piece_on_left_adjacent_square = squares[left_adjacent_square_index]
         piece_on_right_adjacent_square = squares[right_adjacent_square_index]
-        
+
         # Left en passant
         if piece_on_left_adjacent_square != piece_class_none:
             if piece_class.is_pawn(piece_on_left_adjacent_square) and piece_class.get_color(piece_on_left_adjacent_square) != color:
-                if pawn_movement_data[left_adjacent_square_index] == 1:
-                    # If adjacent piece exist AND piece is a pawn AND piece is an enemy AND piece only moved once.
+                left_pawn_movement_data = pawn_movement_data[left_adjacent_square_index]
+
+                if left_pawn_movement_data[0] == 1 and move_count == left_pawn_movement_data[1]:
+                    # If adjacent piece exist
+                    # AND piece is a pawn 
+                    # AND piece is an enemy 
+                    # AND piece only moved once
+                    # AND piece moved only a turn ago
                     moves.append((square_index, left_adjacent_square_index + piece_class.dir_top * color))
 
         # Right en passant
         if piece_on_right_adjacent_square != piece_class_none:
             if piece_class.is_pawn(piece_on_right_adjacent_square) and piece_class.get_color(piece_on_right_adjacent_square) != color:
-                if pawn_movement_data[right_adjacent_square_index] == 1:
-                    # If adjacent piece exist AND piece is a pawn AND piece is an enemy AND piece only moved once.
+                right_pawn_movement_data = pawn_movement_data[right_adjacent_square_index]
+                
+                if right_pawn_movement_data[0] == 1 and move_count == right_pawn_movement_data[1]:
+                    # If adjacent piece exist 
+                    # AND piece is a pawn 
+                    # AND piece is an enemy 
+                    # AND piece only moved once
+                    # AND piece moved only a turn ago
                     moves.append((square_index, right_adjacent_square_index + piece_class.dir_top * color))
 
 def generate_knight_moves(squares: list, row: int, col: int, piece: int, moves: list):
@@ -140,7 +153,7 @@ def generate_king_moves(squares: list, row: int, col: int, piece: int, moves: li
         if right_castle_allowed:
             moves.append((square_index, square_index + 2))
 
-def generate_moves(squares: list, piece_indices: list, moves: list, pawn_movement_data: list, castling_allowed: list):
+def generate_moves(squares: list, piece_indices: list, moves: list, pawn_movement_data: list, castling_allowed: list, move_count: int):
     for square_index in piece_indices:
         piece = squares[square_index]
         row, col = square_index // 8, square_index % 8
@@ -161,7 +174,8 @@ def generate_moves(squares: list, piece_indices: list, moves: list, pawn_movemen
                     col=col,
                     piece=piece,
                     moves=moves,
-                    pawn_movement_data=pawn_movement_data
+                    pawn_movement_data=pawn_movement_data,
+                    move_count=move_count
                 )
             elif piece_class.is_knight(piece):
                 generate_knight_moves(

@@ -20,4 +20,4 @@ def overwrite_position(squares: list, FEN: str, piece_indices: list, pawn_moveme
                 col += 1
 
                 if piece_class.is_pawn(piece):
-                    pawn_movement_data[square_index] = 0
+                    pawn_movement_data[square_index] = (0, 0)
