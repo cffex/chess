@@ -5,6 +5,11 @@ knight_movement_lookup = []
 king_movement_lookup = []
 pawn_movement_lookup = []
 
+castle_range_lookup = [
+    [range(1, 4), range(5, 7)], 
+    [range(57, 60), range(61, 63)]
+]
+
 for row in range(8):
     for col in range(8):
         square_index = row * 8 + col

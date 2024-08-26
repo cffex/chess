@@ -4,6 +4,7 @@ squares_to_edge_lookup = precompute_movedata.squares_to_edge_lookup
 knight_movement_lookup = precompute_movedata.knight_movement_lookup
 king_movement_lookup = precompute_movedata.king_movement_lookup
 pawn_movement_lookup = precompute_movedata.pawn_movement_lookup
+castle_range_lookup = precompute_movedata.castle_range_lookup
 piece_class_none = piece_class.none
 
 def generate_sliding_moves(squares: list, row: int, col: int, piece: int, moves: list):
@@ -101,7 +102,7 @@ def generate_knight_moves(squares: list, row: int, col: int, piece: int, moves: 
         if piece_on_move_target == piece_class_none or piece_class.get_color(piece_on_move_target) != color:
             moves.append((square_index, move_target_index))
 
-def generate_king_moves(squares: list, row: int, col: int, piece: int, moves: list):
+def generate_king_moves(squares: list, row: int, col: int, piece: int, moves: list, castling_allowed: list):
     square_index = row * 8 + col
     color = piece_class.get_color(piece)
 
@@ -113,7 +114,33 @@ def generate_king_moves(squares: list, row: int, col: int, piece: int, moves: li
         if (piece_on_target_square_exist or piece_on_target_square_is_enemy) and not piece_class.is_king(piece_on_target_square):
             moves.append((square_index, target_square_index))
 
-def generate_moves(squares: list, piece_indices: list, moves: list, pawn_movement_data: list):
+    # Castling
+
+    # Positional condition
+
+    if col == 4 and (row == 0 or row == 7):
+        is_white = color > 0
+        left_range = (is_white and castle_range_lookup[0][0]) or castle_range_lookup[1][0]
+        right_range = (is_white and castle_range_lookup[0][1]) or castle_range_lookup[1][1]
+
+        left_castle_allowed = castling_allowed[piece_class.convert_to_01_index(color)][0]
+        right_castle_allowed = castling_allowed[piece_class.convert_to_01_index(color)][1]
+
+        for target_index in left_range:
+            if squares[target_index] != piece_class_none:
+                left_castle_allowed = False
+
+        for target_index in right_range:
+            if squares[target_index] != piece_class_none:
+                right_castle_allowed = False
+
+        if left_castle_allowed:
+            moves.append((square_index, square_index - 2))
+
+        if right_castle_allowed:
+            moves.append((square_index, square_index + 2))
+
+def generate_moves(squares: list, piece_indices: list, moves: list, pawn_movement_data: list, castling_allowed: list):
     for square_index in piece_indices:
         piece = squares[square_index]
         row, col = square_index // 8, square_index % 8
@@ -150,5 +177,6 @@ def generate_moves(squares: list, piece_indices: list, moves: list, pawn_movemen
                     row=row,
                     col=col,
                     piece=piece,
-                    moves=moves
+                    moves=moves,
+                    castling_allowed=castling_allowed
                 )

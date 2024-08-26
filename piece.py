@@ -134,3 +134,11 @@ def get_enum(piece: int):
         return "q"
     elif piecetype == king:
         return "k"
+    elif piecetype == none:
+        return "none"
+    
+##############################################################
+
+# Translates [-1, 1] -> [0, 1] by -1 -> 0 and 1 -> 1 
+def convert_to_01_index(color: int):
+    return 1 - int(0.5 * (color + 1))

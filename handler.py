@@ -86,7 +86,7 @@ def draw(board):
 ###
 
 board = board_class.board()
-board.load_position(FEN=r"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
+board.load_position(FEN=r"rn2k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K1NR")
 
 while running:
     if not moves_generated:
