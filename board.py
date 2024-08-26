@@ -51,6 +51,8 @@ class board():
         starting_piece_color = piece_class.get_color(piece_on_starting_index) 
         ending_piece_color = piece_class.get_color(piece_on_ending_index)
 
+        starting_piece_is_white = starting_piece_color > 0
+
         ###
         ### Moving the piece from starting_index to ending_index
         ###
@@ -64,11 +66,10 @@ class board():
             rook_01_index = piece_class.convert_to_01_index(ending_piece_color)
             rook_col = ending_index % 8
             is_left_index = 0 if rook_col < 5 else 1
-            
             self.castling_allowed[rook_01_index][is_left_index] = False
         
-        # Handles en passant move
         if piece_class.is_pawn(piece_on_starting_index):
+            # Handles en passant move
             abs_delta_move = abs(delta_move)
 
             # If move is a diagonal move
@@ -77,70 +78,32 @@ class board():
                 if piece_on_ending_index == piece_class.none and piece_class.is_pawn(squares[ending_index + piece_class.dir_bottom * starting_piece_color]):
                     squares[ending_index + piece_class.dir_bottom * starting_piece_color] = piece_class.none
 
+            # Handles movecount
+            if piece_class.is_pawn(piece_on_starting_index):
+                self.pawn_movement_data[ending_index] =  self.pawn_movement_data[starting_index] + 1
+                self.pawn_movement_data[starting_index] = 0
+
         # Handles castling
         if piece_class.is_king(piece_on_starting_index) or piece_class.is_rook(piece_on_starting_index):
-            # Left
             if piece_class.is_king(piece_on_starting_index):
-                if delta_move == -2:
-                    # White
-                    if starting_piece_color > 0:
-                        squares[3] = piece_class.rook
-                        squares[0] = piece_class.none
-                        
-                        self.piece_indices.remove(0)
-                        self.piece_indices.append(3)
+                start_rook_index = 0 if delta_move == -2 else 7
+                end_rook_index = 3 if delta_move == -2 else 5
 
-                        # When a king or a rook moves, castling is disabled
-                        self.castling_allowed[0][0] = False
-                        self.castling_allowed[0][1] = False
-                    # Black
-                    else:
-                        squares[59] = -piece_class.rook
-                        squares[56] = piece_class.none
-
-                        self.piece_indices.remove(56)
-                        self.piece_indices.append(59)
-
-                        # When a king or a rook moves, castling is disabled
-                        self.castling_allowed[1][0] = False
-                        self.castling_allowed[1][1] = False
-
-                #  Right
-                elif delta_move == 2:
-                    # White
-                    if starting_piece_color > 0:
-                        squares[5] = piece_class.rook
-                        squares[7] = piece_class.none
-
-                        self.piece_indices.remove(7)
-                        self.piece_indices.append(5)
-
-                        # When a king or a rook moves, castling is disabled
-                        self.castling_allowed[0][0] = False
-                        self.castling_allowed[0][1] = False
-                    
-                    # Black
-                    else:
-                        squares[61] = -piece_class.rook
-                        squares[63] = piece_class.none
-
-                        self.piece_indices.remove(63)
-                        self.piece_indices.append(61)
-                        
-                        #  When a king or a rook moves, castling is disabled
-                        self.castling_allowed[1][0] = False
-                        self.castling_allowed[1][1] = False
+                start_rook_index_colored = start_rook_index if starting_piece_is_white else start_rook_index + 56
+                end_rook_index_colored = end_rook_index if starting_piece_is_white else end_rook_index + 56
+                
+                squares[start_rook_index_colored] = piece_class.none
+                squares[end_rook_index_colored] = piece_class.rook if starting_piece_is_white else -piece_class.rook
+                self.piece_indices.remove(start_rook_index_colored)
+                self.piece_indices.append(end_rook_index_colored)
+                
+                # When a king or a rook moves, castling is disabled for that color
+                color_index = 0 if starting_piece_is_white else 1
+                self.castling_allowed[color_index][0] = False
+                self.castling_allowed[color_index][1] = False
         
         squares[starting_index] = piece_class.none
         squares[ending_index] = piece_on_starting_index
-
-        ###
-        ### Update movecount if it is a pawn
-        ###
-        
-        if piece_class.is_pawn(piece_on_starting_index):
-            self.pawn_movement_data[ending_index] =  self.pawn_movement_data[starting_index] + 1
-            self.pawn_movement_data[starting_index] = 0
 
         ###
         ### Update the piece indices loopup
