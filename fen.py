@@ -3,18 +3,18 @@ piecetype_datavalue = piece_class.piecetype_datavalue
 
 def overwrite_position(squares: list, FEN: str, piece_indices: list, pawn_movement_data: list):
     split_FEN: str = FEN.split(" ")[0]
-    row, col = 0, 0
+    row, col = 7, 0
 
     for char in split_FEN:
         if char == r"/":
-            row += 1
+            row -= 1
             col = 0
         else:
             if char.isdigit():
                 col += int(char)
             else:
                 square_index = row * 8 + col
-                piece = piecetype_datavalue[char.lower()] * (char.islower() and 1 or -1)
+                piece = piecetype_datavalue[char.lower()] * (-1 if char.islower() else 1)
                 squares[square_index] = piece
                 piece_indices.append(square_index)
                 col += 1
