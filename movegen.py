@@ -266,7 +266,7 @@ def generate_legal_moves(squares: list, piece_indices: list, pawn_movement_data:
 
     return [item for item in white_moves if item not in eliminated_white_moves], [item for item in black_moves if item not in eliminated_black_moves]
 
-#* Bruteforce method. Very unoptimized.
+#* Bruteforce method. An incredibly slow method.
 def filter_illegal_moves(squares: list[int], piece_indices: list[int], pawn_movement_data: list[int], castling_allowed: list[list[bool]], move_count: int, my_moves: list[tuple], my_color: int, enemy_color: int):
     eliminated_moves = []
     board_copy = board.board()
