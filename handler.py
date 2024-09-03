@@ -26,8 +26,8 @@ square_move_color = (255, 100, 100)
 for row in range(8):
     for col in range(8):
         sprite = pygame.Rect(
-            row * screen_size[0] / 8,
-            col * screen_size[1] / 8, 
+            col * screen_size[0] / 8,
+            (7-row) * screen_size[1] / 8, 
             screen_size[0] / 8,
             screen_size[1] / 8
         )
@@ -75,8 +75,8 @@ def draw(board):
                 piece_sprite = piece_sprites[piece_sprite_name + ".png"]
 
                 screen.blit(piece_sprite, (
-                    row * screen_size[0] / 8,
-                    col * screen_size[1] / 8
+                    col * screen_size[0] / 8,
+                    (7-row) * screen_size[1] / 8
                 ))
 
     pygame.display.flip()
@@ -86,11 +86,11 @@ def draw(board):
 ###
 
 board = board_class.board()
-board.load_position(FEN=r"R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNNK1B1")
+board.load_position(FEN=r"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
 
 while running:
     if not moves_generated:
-        board.generate_moves()
+        board.generate_moves(get_legal_moves=True, color=piece_class.white)
         moves_generated = True
     
     draw(board)
@@ -106,8 +106,8 @@ while running:
             pos = pygame.mouse.get_pos()
             x, y = pos[0], pos[1]
 
-            row = math.floor(8 * x / screen_size[0])
-            col = math.floor(8 * y / screen_size[1])
+            col = math.floor(8 * x / screen_size[0])
+            row = 7-math.floor(8 * y / screen_size[1])
             square_index = row * 8 + col
 
             if not selection_debounce:

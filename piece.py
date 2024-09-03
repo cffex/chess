@@ -83,11 +83,11 @@ def is_black(piece: int):
 
 ##############################################################
 
-def is_sliding_move(piece: int):
+def is_sliding_piece(piece: int):
     piecetype = abs(piece)
     return piecetype == rook or piecetype == queen or piecetype == bishop
 
-def is_nonsliding_move(piece: int):
+def is_nonsliding_piece(piece: int):
     piecetype = abs(piece)
     return piecetype == pawn or piecetype == knight or piecetype == king
 
