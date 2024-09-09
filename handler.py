@@ -86,11 +86,12 @@ def draw(board):
 ###
 
 board = board_class.board()
-board.load_position(FEN=r"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
+board.load_position(FEN=r"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
 
+current_color = piece_class.white
 while running:
     if not moves_generated:
-        board.generate_moves(get_legal_moves=True, color=piece_class.white)
+        board.generate_moves(get_legal_moves=True, color=current_color)
         moves_generated = True
     
     draw(board)
@@ -134,6 +135,10 @@ while running:
                             board.make_move(move)
                             moves_generated = False
                             break
+                    if current_color == piece_class.white:
+                        current_color = piece_class.black
+                    else:
+                        current_color = piece_class.white
                  
                 selection_debounce = False
                 selection_move_square_indices.clear()

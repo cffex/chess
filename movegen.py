@@ -130,7 +130,7 @@ def generate_knight_moves(squares: list, row: int, col: int, piece: int, moves: 
         if piece_on_move_target == piece_class_none or piece_class.get_color(piece_on_move_target) != color:
             moves.append((square_index, move_target_index))
 
-def generate_king_moves(squares: list, row: int, col: int, piece: int, moves: list, castling_allowed: list, legal_move_search: bool):
+def generate_king_moves(squares: list, row: int, col: int, piece: int, moves: list, castling_allowed: list):
     square_index = row * 8 + col
     color = piece_class.get_color(piece)
 
@@ -183,7 +183,7 @@ def generate_king_moves(squares: list, row: int, col: int, piece: int, moves: li
 
         #print("\n")
 
-def generate_moves(squares: list, piece_indices: list, pawn_movement_data: list, castling_allowed: list, move_count: int, color: int, legal_move_search: bool):
+def generate_moves(squares: list, piece_indices: list, pawn_movement_data: list, castling_allowed: list, move_count: int, color: int):
     moves = []
     
     for square_index in piece_indices:
@@ -228,43 +228,42 @@ def generate_moves(squares: list, piece_indices: list, pawn_movement_data: list,
                     piece=piece,
                     moves=moves,
                     castling_allowed=castling_allowed,
-                    legal_move_search=legal_move_search
                 )
     return moves
 
-def generate_legal_moves(squares: list, piece_indices: list, pawn_movement_data: list, castling_allowed: list, move_count: int):
-    white_moves = generate_moves(
-        squares=squares,
-        piece_indices=piece_indices,
-        pawn_movement_data=pawn_movement_data,
-        castling_allowed=castling_allowed,
-        move_count=move_count,
-        color=piece_class.white,
-        legal_move_search=True
-    )
+def generate_legal_moves(squares: list, piece_indices: list, pawn_movement_data: list, castling_allowed: list, move_count: int, color: int):
+    if color == piece_class.white:
+        # Filter white's moves
+        white_moves = generate_moves(
+            squares=squares,
+            piece_indices=piece_indices,
+            pawn_movement_data=pawn_movement_data,
+            castling_allowed=castling_allowed,
+            move_count=move_count,
+            color=piece_class.white,
+        )
 
-    black_moves = generate_moves(
-        squares=squares,
-        piece_indices=piece_indices,
-        pawn_movement_data=pawn_movement_data,
-        castling_allowed=castling_allowed,
-        move_count=move_count,
-        color=piece_class.black,
-        legal_move_search=False
-    )
+        eliminated_white_moves = filter_illegal_moves(
+            squares, piece_indices, pawn_movement_data, castling_allowed, move_count, 
+            white_moves, piece_class.white, piece_class.black
+        )
+        return [item for item in white_moves if item not in eliminated_white_moves]
+    else:
+        black_moves = generate_moves(
+            squares=squares,
+            piece_indices=piece_indices,
+            pawn_movement_data=pawn_movement_data,
+            castling_allowed=castling_allowed,
+            move_count=move_count,
+            color=piece_class.black,
+        )
+        # Filter black's moves
+        eliminated_black_moves = filter_illegal_moves(
+            squares, piece_indices, pawn_movement_data, castling_allowed, move_count,
+            black_moves, piece_class.black, piece_class.white
+        )
 
-    # Filter white's moves
-    eliminated_white_moves = filter_illegal_moves(
-        squares, piece_indices, pawn_movement_data, castling_allowed, move_count, 
-        white_moves, piece_class.white, piece_class.black
-    )
-    # Filter black's moves
-    eliminated_black_moves = filter_illegal_moves(
-        squares, piece_indices, pawn_movement_data, castling_allowed, move_count,
-        black_moves, piece_class.black, piece_class.white
-    )
-
-    return [item for item in white_moves if item not in eliminated_white_moves], [item for item in black_moves if item not in eliminated_black_moves]
+        return [item for item in black_moves if item not in eliminated_black_moves]
 
 #* Bruteforce method. An incredibly slow method.
 def filter_illegal_moves(squares: list[int], piece_indices: list[int], pawn_movement_data: list[int], castling_allowed: list[list[bool]], move_count: int, my_moves: list[tuple], my_color: int, enemy_color: int):
@@ -272,9 +271,6 @@ def filter_illegal_moves(squares: list[int], piece_indices: list[int], pawn_move
     board_copy = board.board()
 
     for my_move in my_moves:
-        #print("move:", my_move)
-        #print("color:", "white" if my_color == piece_class.white else "black")
-        
         board_copy.load_position_list(
             squares.copy(), 
             piece_indices.copy(), 
@@ -298,16 +294,11 @@ def filter_illegal_moves(squares: list[int], piece_indices: list[int], pawn_move
                 if piece_class.is_rook(board_copy.squares[enemy_move_target]):
                     if enemy_move_target == 3 or enemy_move_target == 5 or enemy_move_target == 59 or enemy_move_target == 61:
                         eliminated_moves.append(my_move)
-                        #print("castling dismissed")
                         break
 
             if piece_class.is_king(piece_on_enemy_move_target) and piece_class.get_color(piece_on_enemy_move_target) == my_color:
                 eliminated_moves.append(my_move)
                 break
-        
-        #print("\n")
-
-    #print(eliminated_moves)
 
     return eliminated_moves
 

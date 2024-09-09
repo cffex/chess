@@ -116,6 +116,9 @@ def is_king(piece: int):
 def get_color(piece: int):
     return (is_white(piece) and white) or black
 
+def get_opposite_color(color: int):
+    return -color
+
 def get_piece_type(piece: int):
     return abs(piece)
 
